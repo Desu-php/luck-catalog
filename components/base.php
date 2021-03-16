@@ -120,14 +120,15 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="catalog_filters__btns filter-submt-btn">
+                                        <button @click="clearFilters">Сбросить</button>
+                                        <button @click="applyFilters" v-if="filter.static.length > 0 || filter.features.length > 0" class="text-gold">Применить</button>
+                                        <button @click="applyFilters" v-else>Применить</button>
+                                    </div>
                                 </div>
 
                             </div>
-                            <div class="catalog_filters__btns filter-submt-btn">
-                                <button @click="clearFilters">Сбросить</button>
-                                <button @click="applyFilters" v-if="filter.static.length > 0 || filter.features.length > 0" class="text-gold">Применить</button>
-                                <button @click="applyFilters" v-else>Применить</button>
-                            </div>
+
                         </div>
                         <div class="base-container-block">
                             <div class="bases_preview_wrap" v-if='bases' id="bases">
