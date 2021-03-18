@@ -2,6 +2,7 @@ Vue.component('multiselect', window.VueMultiselect.default)
 Vue.component('v-select', window.VueSelect.default)
 Vue.component('star-rating', window.VueStarRating.default)
 Vue.component('vue-slider', window['vue-slider-component'])
+// Vue.component('vue-skeleton', window.VueSkeletonLoading.default)
 
 
 const YM_COUNTER = 41615739

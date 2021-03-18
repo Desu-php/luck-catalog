@@ -101,8 +101,8 @@ if ( $menu_type == 'header-menu-top' && engage_is_blog() ) {
 <!-- {/literal} End Talk-Me -->
 
 
-<body <?php body_class(); ?>>
-
+<body <?php body_class(); ?> >
+<div id="katalog-vue">
 <?php if ( engage_get_theme_option( 'preloader' ) == 1 ) { ?>
     <div id="preloader">
         <div class="preloader-wrap">
@@ -116,13 +116,7 @@ if ( $menu_type == 'header-menu-top' && engage_is_blog() ) {
 <?php } ?>
 
 <?php
-  get_template_part( 'template-parts/menu' );
-?>
-
-<?php
-if (function_exists('yoast_breadcrumb')) {
-  yoast_breadcrumb('<div class="breadcrumbs"><div class="container">','</div></div>');
-}
+  get_template_part( 'template-parts/katalog-menu' );
 ?>
 
 <section class="content-wrap <?php echo esc_attr( $page_wrapper_class ); ?> <?php echo esc_attr( $solid_nav_class ); ?>">

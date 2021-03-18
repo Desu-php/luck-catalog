@@ -2,7 +2,12 @@
 <?php $pageBuilder = new PageBuilder(); ?>
 <?php $categoryData = $pageBuilder->getCategoryData(); ?>
 <div id="js_info" style="display: none;" data-slug='<?php echo $categoryData['slug']; ?>' data-base_url="<?php echo wp_upload_dir()['baseurl']; ?>" data-sphere_id="<?php echo $categoryData['sphere']['sphere_id']; ?>" data-city_id="<?php echo isset($categoryData['cityId']) ? $categoryData['cityId'] : ''; ?>" data-square='<?php echo isset($categoryData['square']) ? $categoryData['square'] : '[]'; ?>' data-min_price='<?php echo isset($categoryData['minPrice']) ? $categoryData['minPrice'] : '[]'; ?>' data-features='<?php echo isset($categoryData['features']) ? $categoryData['features'] : '[]'; ?>' data-filters='<?php echo isset($categoryData['session']['filters']) ? $categoryData['session']['filters'] : '[]'; ?>' data-limit='<?php echo isset($categoryData['session']['limit']) ? $categoryData['session']['limit'] : null; ?>' data-socket_url="<?php echo LUCK_SOCKET_URL; ?>" data-widget_url="<?php echo LUCK_WIDGET_URL; ?>"></div>
-<div id="katalog-vue">
+<div>
+    <?php
+    if (function_exists('yoast_breadcrumb')) {
+        yoast_breadcrumb('<div class="breadcrumbs"><row><div><span>OMg</span></div>','</row></div>');
+    }
+    ?>
     <div class="special-heading align-center filter-head">
         <div class="filter-head-items">
             <div class="catalog_left__top--item catalog_left__top--item_filter filter-btn">
@@ -38,98 +43,8 @@
             <div class="catalog_wrap__left" v-show='listView || (!listView && !mapView)' :class="listView && !mapView ? 'fullwidth' : ''">
                 <div id="left">
                     <div class="catalog_left__body filter-left-body">
-                        <div class="filter-container-block" :class="{ 'active': showFilters }">
-                            <div class="catalog_left__top filter-block">
-                                <div class="mobile-show">
-                                    <div class='total_items total-item-filter'>
-                                        <span>Количество найденных вариантов: <span class="total-item-searched"> {{ basesTotal }}</span></span>
-                                    </div>
-                                    <div class="catalog_left__top--item catalog_left__top--item_view filter-two-btn">
-                                        <button @click="onlyListView" :class='{ active: listView }'>Списком</button>
-                                        <button @click="onlyMapView" :class='{ active: mapView }'>На карте</button>
-                                    </div>
-                                </div>
-                                <div class="catalog_left__top--item catalog_left__top--item_search filter-search-p">
-                                    <p class="filter-title">
-                                        Поиск по названию
-                                    </p>
-                                    <v-select v-model="partner" :options="basesSelect" @input="sendYaAndGoToBase(partner)" @change="location = partner.link" placeholder="Название площадки" label="name"></v-select>
-                                </div>
-                                <div class="sort-items" :class="sort.class">
-                                    <p class="filter-title">Сортировать</p>
-                                    <v-select v-model="sort" :options="sortItems" @input="changeSort" placeholder="по возрастанию цены" label="name"></v-select>
-                                </div>
-                                <div class="filter-check-block">
-                                    <p class="filter-title">
-                                        Быстрое бронирование
-                                    </p>
-                                    <div class="check-filter-item" v-for="n in 3">
-                                        <div class="checkbox_custom">
-                                            <input type="checkbox" :value="staticFilters[n - 1]" :id="staticFilters[n - 1].type" v-model="filter.static" :checked="staticFilters[n - 1].checked">
-                                            <label :for="staticFilters[n - 1].type" class="check-filter-label">
-                                                {{staticFilters[n - 1].name}}
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="filter-check-block">
-                                    <p class="filter-title">
-                                        Акции и скидки
-                                    </p>
-                                    <div class="check-filter-item">
-                                        <div class="checkbox_custom">
-                                            <input type="checkbox" :value="staticFilters[3]" :id="staticFilters[3].type" v-model="filter.static" :checked="staticFilters[3].checked">
-                                            <label :for="staticFilters[3].type" class="check-filter-label">
-                                                {{staticFilters[3].name}}
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="filter-input-block">
-                                    <p class="filter-title">Стоимость, ₽/ч</p>
-                                    <div class="catalog_left__top--item catalog_left__top--item_view filter-two-btn">
-                                        <input class="filter_scroll__input" type="number" v-model="minPrice.value[0]" @keyup="onChangeMinPrice" @change="onChangeMinPrice" />
-                                        <input class="filter_scroll__input" type="number" v-model="minPrice.value[1]" @keyup="onChangeMinPrice" @change="onChangeMinPrice" />
-                                    </div>
-                                    <div class="input-drag-ball">
-                                        <vue-slider v-model="minPrice.value" :min="minPrice.min" :max="minPrice.max" :interval="50" @drag-end="onChangeMinPrice"></vue-slider>
-                                    </div>
-                                </div>
-                                <div class="filter-input-block">
-                                    <p class="filter-title">Площадь, м²</p>
-                                    <div class="catalog_left__top--item catalog_left__top--item_view filter-two-btn">
-                                        <input class="filter_scroll__input" type="number" v-model="square.value[0]" @keyup="onChangeSquare" @change="onChangeSquare" />
-                                        <input class="filter_scroll__input" type="number" v-model="square.value[1]" @keyup="onChangeSquare" @change="onChangeSquare" />
-                                    </div>
-                                    <div class="input-drag-ball">
-                                        <vue-slider v-model="square.value" :min="square.min" :max="square.max" @drag-end="onChangeSquare"></vue-slider>
-                                    </div>
-                                </div>
-                                <div class="filter-drop-block">
-                                    <div class="filter-drop-item" v-for="feature in features">
-                                        <div class="filter-drop-btn filter-title">
-                                            {{ feature.category }}
-                                        </div>
-                                        <div class="filter-drop-items">
-                                            <div class="checkbox_custom__item check-filter-item" v-for="value in feature.values">
-                                                <div class='checkbox_custom'>
-                                                    <input :id='value.feature_id' type="checkbox" :value="value" v-model="filter.features" :checked="value.checked" />
-                                                    <label :for='value.feature_id' class="check-filter-label">{{
-                                                        value.name }}</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="catalog_filters__btns filter-submt-btn">
-                                        <button @click="clearFilters">Сбросить</button>
-                                        <button @click="applyFilters" v-if="filter.static.length > 0 || filter.features.length > 0" class="text-gold">Применить</button>
-                                        <button @click="applyFilters" v-else>Применить</button>
-                                    </div>
-                                </div>
+                        <?php include 'filter.php' ?>
 
-                            </div>
-
-                        </div>
                         <div class="base-container-block">
                             <div class="bases_preview_wrap" v-if='bases' id="bases">
                                 <template v-for="(base,index) in bases" >
@@ -150,7 +65,10 @@
                                                             </a>
                                                         </template>
                                                         <template v-else-if="base.rooms.length === 2">
-                                                            <a v-show="index <= 0 && image_index === 0 ||index === 1 && image_index <= 1 " :data-fancybox="base.base_id" :href="'https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/'+image  + '?width=1920&height=1080'">
+                                                            <a v-show="index === 0 && image_index === 0
+                                                                        || index === 0 && image_index === 1 && base.rooms[1].images.length === 1
+                                                                        || index === 1 && image_index <= 1 && room.images.length >= 1"
+                                                               :data-fancybox="base.base_id" :href="'https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/'+image  + '?width=1920&height=1080'">
                                                                 <img :src="'https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/'+image + '?width=150&height=150'" :key="image" :alt="base.name" />
                                                             </a>
                                                         </template>
@@ -180,8 +98,8 @@
                                                                     <span title="круглосуточно">круглосуточно</span>
                                                                 </template>
                                                                 <template v-else>
-                                                                    <span :title="base.work_time"><span>Будни:</span> {{ base.work_time }}</span>
-                                                                    <span :title="base.weekend_time"><span>Выходные:</span> {{ base.weekend_time }}</span>
+                                                                    <span :title="base.work_time"><span>Буд:</span> {{ base.work_time }}</span>
+                                                                    <span :title="base.weekend_time"><span>Вых:</span> {{ base.weekend_time }}</span>
                                                                 </template>
                                                             </span>
                                                         </li>
@@ -189,9 +107,6 @@
                                                             <span class="base_preview_title"><img src="<?php echo plugins_url('luck-catalog/assets/img/pay-online.png') ?>" /></span>
                                                             <span class="base_preview_value">Оплата онлайн</span>
                                                         </li>
-                                                        <!-- <li class='base_preview_list__item'>
-
-                                                        </li> -->
                                                     </ul>
                                                 </div>
                                                 <div class="base-price-info">
@@ -216,115 +131,42 @@
                                         </a>
                                     </div>
                                 </template>
+                                    <div  v-for="i in 10" style="max-width: 476px;padding: 15px 4px" class="base-link bases_preview__item" :key="i" v-show="loading">
+                                        <skeleton theme="opacity" shape="radius" bg-color="#dcdcdc">
+                                            <row style="padding-left: 10px; border-radius: 5px;">
+                                                <i-col :span="12">
+                                                    <tb-skeleton  :aspect-ratio="0.05"></tb-skeleton>
+                                                </i-col>
+                                            </row>
+                                            <row>
+                                                <i-col :span="8" style="padding-left: 10px;margin-top: 5px" v-for="i in 3">
+                                                    <tb-skeleton :span="20" style=";margin-top: 5px" :aspect-ratio="1" shape="square">
+                                                    </tb-skeleton>
+                                                </i-col>
+                                            </row>
+                                            <row style="margin-top: 10px">
+                                                <i-col :span="12" v-for="i in 2">
+                                                    <i-col :span="24" style="padding-left: 10px; margin-top: 15px" v-for="i in 4">
+                                                        <tb-skeleton :aspect-ratio="0.05"></tb-skeleton>
+                                                    </i-col>
+                                                </i-col>
+                                            </row>
+                                        </skeleton>
+                                    </div>
+                            </div>
+                            <div class="catalog_left__footer" v-show="listView || (!listView && !mapView)">
+                                <button v-if="isHideShowMore" @click="showMore">Показать еще</button>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
             <div class="catalog_wrap__right filter-map" v-show="mapView || (!listView && !mapView)" :class="mapView && !listView ? 'fullwidth' : ''">
-                <div class="catalog_left__top filter-block filter-container-block " v-show="mapView && !listView" :class="{ 'active': showFilters }">
-                    <div class="mobile-show">
-                        <div class='total_items total-item-filter'>
-                            <span>Количество найденных вариантов: <span class="total-item-searched"> {{ basesTotal }}</span></span>
-                        </div>
-                        <div class="catalog_left__top--item catalog_left__top--item_view filter-two-btn">
-                            <button @click="onlyListView" :class='{ active: listView }'>Списком</button>
-                            <button @click="onlyMapView" :class='{ active: mapView }'>На карте</button>
-                        </div>
-                    </div>
-                    <div class="catalog_left__top--item catalog_left__top--item_search filter-search-p">
-                        <p class="filter-title">
-                            Поиск по названию
-                        </p>
-                        <v-select v-model="partner" :options="basesSelect" @input="sendYaAndGoToBase(partner)" @change="location = partner.link" placeholder="Название площадки" label="name"></v-select>
-                    </div>
-                    <!-- <div class="filter_line"></div> -->
-                    <div class="sort-items" :class="sort.class">
-                        <p class="filter-title">Сортировать</p>
-                        <v-select v-model="sort" :options="sortItems" @input="changeSort" placeholder="по возрастанию цены" label="name"></v-select>
-                    </div>
-                    <div class="filter-check-block">
-                        <p class="filter-title">
-                            Быстрое бронирование
-                        </p>
-                        <div class="check-filter-item" v-for="n in 3">
-                            <div class="checkbox_custom">
-                                <input type="checkbox" :value="staticFilters[n - 1]" :id="staticFilters[n - 1].type" v-model="filter.static" :checked="staticFilters[n - 1].checked">
-                                <label :for="staticFilters[n - 1].type" class="check-filter-label">
-                                    {{staticFilters[n - 1].name}}
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="filter-check-block">
-                        <p class="filter-title">
-                            Акции и скидки
-                        </p>
-                        <div class="check-filter-item">
-                            <div class="checkbox_custom">
-                                <input type="checkbox" :value="staticFilters[3]" :id="staticFilters[3].type" v-model="filter.static" :checked="staticFilters[3].checked">
-                                <label :for="staticFilters[3].type" class="check-filter-label">
-                                    {{staticFilters[3].name}}
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="filter-input-block">
-                        <p class="filter-title">Стоимость, ₽/ч</p>
-                        <div class="catalog_left__top--item catalog_left__top--item_view filter-two-btn">
-                            <input class="filter_scroll__input" type="number" v-model="minPrice.value[0]" @keyup="onChangeMinPrice" @change="onChangeMinPrice" />
-                            <input class="filter_scroll__input" type="number" v-model="minPrice.value[1]" @keyup="onChangeMinPrice" @change="onChangeMinPrice" />
-                        </div>
-                        <div class="input-drag-ball">
-                            <vue-slider v-model="minPrice.value" :min="minPrice.min" :max="minPrice.max" :interval="50" @drag-end="onChangeMinPrice"></vue-slider>
-                        </div>
-                    </div>
-                    <div class="filter-input-block">
-                        <p class="filter-title">Площадь, м²</p>
-                        <div class="catalog_left__top--item catalog_left__top--item_view filter-two-btn">
-                            <input class="filter_scroll__input" type="number" v-model="square.value[0]" @keyup="onChangeSquare" @change="onChangeSquare" />
-                            <input class="filter_scroll__input" type="number" v-model="square.value[1]" @keyup="onChangeSquare" @change="onChangeSquare" />
-                        </div>
-                        <div class="input-drag-ball">
-                            <vue-slider v-model="square.value" :min="square.min" :max="square.max" @drag-end="onChangeSquare"></vue-slider>
-                        </div>
-                    </div>
-                    <div class="filter-drop-block">
-                        <div class="filter-drop-item" v-for="feature in features">
-                            <div class="filter-drop-btn filter-title">
-                                {{ feature.category }}
-                            </div>
-                            <div class="filter-drop-items">
-                                <div class="checkbox_custom__item check-filter-item" v-for="value in feature.values">
-                                    <div class='checkbox_custom'>
-                                        <input :id='value.feature_id' type="checkbox" :value="value" v-model="filter.features" :checked="value.checked" />
-                                        <label :for='value.feature_id' class="check-filter-label">{{ value.name
-                                            }}</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="catalog_filters__btns filter-submt-btn">
-                        <button @click="clearFilters">Сбросить</button>
-                        <button @click="applyFilters" v-if="filter.static.length > 0 || filter.features.length > 0" class="text-gold">Применить</button>
-                        <button @click="applyFilters" v-else>Применить</button>
-                    </div>
-                    <!--                    <div class='selected_filters'>-->
-                    <!--                        <div class="selected_filters__item" v-for="feature in filter.features">-->
-                    <!--                            <div class="selected_filters__item--inner">-->
-                    <!--                                <span>{{ feature.name }}</span>-->
-                    <!--                                <a @click="removeFilter(feature, 'features')">x</a>-->
-                    <!--                            </div>-->
-                    <!--                        </div>-->
-                    <!--                        <div class="selected_filters__item" v-for="filter in filter.static">-->
-                    <!--                            <div class="selected_filters__item--inner">-->
-                    <!--                                <span>{{ filter.name }}</span>-->
-                    <!--                                <a @click="removeFilter(filter, 'static')">x</a>-->
-                    <!--                            </div>-->
-                    <!--                        </div>-->
-                    <!--                    </div>-->
-                </div>
+                <?php
+                $r = true;
+                include 'filter.php'
+                ?>
                 <div id="right">
                     <div class='base-details__item base-details__map filter-map-inner'>
                         <div class="base-details__item-inner">

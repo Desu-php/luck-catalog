@@ -2,9 +2,11 @@ if (jQuery('#katalog-vue').length > 0) {
     jQuery('body').on('click', '.filter-title', function () {
         jQuery(this).toggleClass('active')
     })
+
     new Vue({
         el: '#katalog-vue',
         data: () => ({
+            checkedFilters: {},
             city: {city_id: null, name: 'Город'},
             sphere: {id: null, value: 'Сфера'},
             cities: [],
@@ -15,7 +17,6 @@ if (jQuery('#katalog-vue').length > 0) {
             isOnlinePayment: false,
             sort: {name: 'Без сортировки', class: ''},
             loading: false,
-            load: true,
             sortItems: [
                 {name: 'По умолчанию', class: ''},
                 {name: 'По возрастанию цены', order: 'minPrice', direction: 'ASC', class: 'gold-icon'},
@@ -54,7 +55,8 @@ if (jQuery('#katalog-vue').length > 0) {
             partner: {name: 'Площадка'},
             mapView: false,
             listView: jQuery(window).width() <= 1024 ? true : false,
-            limit: 10
+            limit: 10,
+            imageCount: 0
         }),
         methods: {
             getNoun(number, one, two, five) {
@@ -71,6 +73,39 @@ if (jQuery('#katalog-vue').length > 0) {
                     return two;
                 }
                 return five;
+            },
+
+            checkImageBase() {
+                jQuery('.base-link-images').each(function (){
+                    console.log('images')
+                    const base = jQuery(this)
+                    if (base.find('a:visible').length < 3){
+                        base.find('a:hidden').first().show()
+                    }
+
+                })
+            },
+            filterHandler(e){
+                const target = e.target
+                const category = target.getAttribute('data-category')
+                const value = target.getAttribute('data-value')
+                this.createOrDeleteFilterData(target.checked, category,value)
+            },
+            createOrDeleteFilterData(checked = false, category, value) {
+                if (checked) {
+                    if (this.checkedFilters[category]) {
+                        this.checkedFilters[category].push(value)
+                    } else {
+                        const newData = {
+                            [category]: [value]
+                        }
+                        this.checkedFilters = {...this.checkedFilters, ...newData}
+                    }
+
+                } else {
+                    this.checkedFilters[category] = this.checkedFilters[category].filter(item => item !== value)
+                }
+                console.log(this.checkedFilters)
             },
             sortingByPc(items) {
                 const firstItems = []
@@ -217,7 +252,19 @@ if (jQuery('#katalog-vue').length > 0) {
                             for (const index in bases[key]['rooms']) {
                                 bases[key]['rooms'][index]['images'] = JSON.parse(bases[key]['rooms'][index]['images'])
                             }
+                            // if (bases[key]['rooms'].length === 1 && bases[key]['rooms'][0]['images'].length ){
+                            //     bases[key]['viewImages'] = bases[key]['rooms'][0]['images']
+                            // }else if (bases[key]['rooms'].length === 2 && bases[key]['rooms'][1]['images'].length >= 2){
+                            //     bases[key]['viewImages']  = [bases[key]['rooms'][0]['images'][0],bases[key]['rooms'][1]['images']]
+                            // }else if (bases[key]['rooms'].length >= 3){
+                            //     bases[key]['viewImages']  = [bases[key]['rooms'][0]['images'][0],bases[key]['rooms'][1]['images'][0],bases[key]['rooms'][3]['images'][0]]
+                            // }else {
+                            //    for (const img in bases[key]['rooms']){
+                            //        bases[key]['viewImages'] = [...bases[key]['rooms'][img]['images']]
+                            //    }
+                            // }
                         }
+
                         this.bases = bases
                     }
                     return response.data
@@ -240,15 +287,14 @@ if (jQuery('#katalog-vue').length > 0) {
                     sphere_id: SPHERE_ID,
                     city_id: this.city.city_id
                 }
-
                 return axios.get(AJAX_URL, {params: params}).then(response => {
                     this.features = response.data.features
-
                     if (SESSION_DATA.features && SESSION_DATA.features.length > 0) {
                         this.features.map(feature => {
                             let selectedFilterItem = feature.values.find(value => SESSION_DATA.features.some(filter => value.feature_id == filter))
                             if (selectedFilterItem) {
                                 this.filter.features.push(selectedFilterItem)
+                                this.createOrDeleteFilterData(true, selectedFilterItem.category_id, selectedFilterItem.name)
                             }
                         })
                     }
@@ -257,6 +303,15 @@ if (jQuery('#katalog-vue').length > 0) {
                         this.filter.static = this.staticFilters.filter(filter => SESSION_DATA.filters.some(sessionFilter => sessionFilter == filter.type))
                     }
                 })
+            },
+            checked(filter){
+                console.log(filter)
+               if (this.filter.features.filter(item => item.feature_id === filter.feature_id)){
+                   console.log(filter)
+                   this.createOrDeleteFilterData(true,filter.category_id, filter.name )
+                   return true
+               }
+               return false
             },
             setMap() {
                 return this.setBasesMap().then(() => {
@@ -371,7 +426,7 @@ if (jQuery('#katalog-vue').length > 0) {
                 }
 
                 this.closeFilters()
-
+                this.bases = []
                 this.showPreloader()
                 this.setTotalBases()
                 let bases = this.setBases()
@@ -388,10 +443,12 @@ if (jQuery('#katalog-vue').length > 0) {
                 this.showFilters = false
             },
             applyFilters() {
-                this.closeFilters()
+                // this.closeFilters()
                 if (this.filter.static.length === 0 && this.filter.features.length === 0) {
                     return false
                 }
+                this.closeFilters()
+                this.bases = []
                 this.showPreloader()
                 this.setTotalBases()
                 let bases = this.setBases()
@@ -416,12 +473,13 @@ if (jQuery('#katalog-vue').length > 0) {
                 this.applyFilters()
             },
             showPreloader() {
-                jQuery('#preloader_sl').show()
+                // jQuery('#preloader_sl').show()
                 this.loading = true
             },
             hidePreloader() {
-                jQuery('#preloader_sl').fadeOut('slow')
+                // jQuery('#preloader_sl').fadeOut('slow')
                 this.loading = false
+                console.log('hide')
             },
             onlyListView() {
                 if (this.listView) {
@@ -476,9 +534,9 @@ if (jQuery('#katalog-vue').length > 0) {
 
                 return params
             },
-            showMore() {
+           async showMore() {
                 this.showPreloader()
-                axios.get(AJAX_URL, {params: this.getBasesParams(10, true, true, 'get_bases_katalog_with_rooms')}).then(async response => {
+                await axios.get(AJAX_URL, {params: this.getBasesParams(10, true, true, 'get_bases_katalog_with_rooms')}).then(async response => {
                     if (response.data) {
                         const bases = response.data
                         if (bases) {
@@ -493,6 +551,7 @@ if (jQuery('#katalog-vue').length > 0) {
 
                     }
                     this.hidePreloader()
+                    ()
                 })
             },
             scroll() {
@@ -644,6 +703,7 @@ if (jQuery('#katalog-vue').length > 0) {
                     Promise.all([bases, map]).then(() => {
                         setTimeout(() => this.hidePreloader(), 2000)
                         jQuery(".base-link-images a").fancybox();
+
                         // jQuery.fancybox.defaults.buttons = [
                         //     'slideShow',
                         //     'share',
@@ -654,7 +714,7 @@ if (jQuery('#katalog-vue').length > 0) {
                     })
                 })
             })
-            this.scroll()
+            // this.scroll()
         }
     })
 }
