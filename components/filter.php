@@ -1,12 +1,12 @@
-<div <?= isset($r)? ' v-show="mapView && !listView"':'' ?>>
+<div <?= isset($r)? ' v-show="mapView && !listView"':'' ?> style="    margin-top: -147px;">
     <div class="catalog_filters__btns filter-submt-btn only-for-desc">
-        <template v-if="filter.static.length === 0 || filter.features.length === 0">
-            <button @click="closeFilters" >Назад</button>
-            <button @click="applyFilters" >Применить</button>
+        <template v-if="filter.static.length === 0 && filter.features.length === 0 || canFilter === 0">
+            <button>Назад</button>
+            <button>Применить</button>
         </template>
         <template v-else>
             <button @click="clearFilters">Сбросить</button>
-            <button @click="applyFilters" class="text-gold">Применить</button>
+            <button @click="applyFilters"  class="text-gold">Применить</button>
         </template>
     </div>
     <div class="catalog_left__top filter-block filter-container-block "  :class="{ 'active': showFilters }">
@@ -39,7 +39,7 @@
             </p>
             <div class="check-filter-item" v-for="n in 3">
                 <div class="checkbox_custom">
-                    <input type="checkbox" :value="staticFilters[n - 1]" :id="staticFilters[n - 1].type" v-model="filter.static" :checked="staticFilters[n - 1].checked">
+                    <input type="checkbox" :value="staticFilters[n - 1]" @change="checkFilter" :id="staticFilters[n - 1].type" v-model="filter.static" :checked="staticFilters[n - 1].checked">
                     <label :for="staticFilters[n - 1].type" class="check-filter-label">
                         {{staticFilters[n - 1].name}}
                     </label>
@@ -52,7 +52,7 @@
             </p>
             <div class="check-filter-item">
                 <div class="checkbox_custom">
-                    <input type="checkbox" :value="staticFilters[3]" :id="staticFilters[3].type" v-model="filter.static" :checked="staticFilters[3].checked">
+                    <input type="checkbox" :value="staticFilters[3]" @change="checkFilter" :id="staticFilters[3].type" v-model="filter.static" :checked="staticFilters[3].checked">
                     <label :for="staticFilters[3].type" class="check-filter-label">
                         {{staticFilters[3].name}}
                     </label>
@@ -115,9 +115,9 @@
         </div>
        </div>
         <div class="catalog_filters__btns filter-submt-btn only-for-mob">
-            <template v-if="filter.static.length === 0 || filter.features.length === 0">
+            <template v-if="filter.static.length === 0 && filter.features.length === 0 || canFilter === 0">
                 <button @click="closeFilters" >Назад</button>
-                <button @click="applyFilters">Применить</button>
+                <button>Применить</button>
             </template>
             <template v-else>
                 <button @click="clearFilters">Сбросить</button>

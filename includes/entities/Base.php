@@ -18,8 +18,8 @@ class Base extends Helper
 
     public function getList($request)
     {
-        $fields = 'b.link, b.name, b.sphere_id, b.image, b.minPrice, b.maxPrice, b.address, b.metro, b.work_time, b.weekend_time, b.rating, b.gpsLat, b.gpsLong, b.icon, b.base_id';
-        $sql = "SELECT DISTINCT $fields FROM wp_luck_bases b LEFT JOIN wp_luck_rooms r ON(b.base_id = r.base_id) WHERE r.room_id != '' AND b.isArchive = false";
+
+        $sql = "SELECT DISTINCT b.* FROM wp_luck_bases b LEFT JOIN wp_luck_rooms r ON(b.base_id = r.base_id) WHERE r.room_id != '' AND b.isArchive = false";
         $sql .= $this->doFilter($request);
         $sql .= $this->doSort($request);
 
@@ -40,7 +40,7 @@ class Base extends Helper
 
     public function showList($request)
     {
-        $bases = $this->getList($request);
+        $bases = $this->getBasesForMapsListWithRooms($request);
 
         $this->setSession($request);
 
@@ -412,7 +412,12 @@ class Base extends Helper
             $sql .= " AND b.city_id = '" . $request['city'] . "'";
 
             if (isset($request['features'])) {
-                $sql .= " AND b.base_id IN(" . $this->getListByFeatures($request['features']) . ")";
+                $features = $this->getListByFeatures($request['features']) ;
+                if (empty($features)){
+                    $sql .= " AND b.base_id = 'undefined'";
+                }else{
+                    $sql .= " AND b.base_id IN(" .$features. ")";
+                }
             }
 
             if (isset($request['square'])) {
@@ -625,9 +630,33 @@ class Base extends Helper
         return $results;
     }
 
-    public function getRoomsIn(array $bases_id = [])
+    private function getBasesForMapsListWithRooms($request)
     {
-        $sql = 'SELECT images, base_id FROM wp_luck_rooms
+        $results = $this->getList($request);
+
+        if (isset($request['saved'])){
+            $rooms_id = [];
+            foreach ($results as $result)
+            {
+                $rooms_id[] = $result['base_id'];
+            }
+            $rooms = $this->getRoomsIn($rooms_id, 'wp_luck_rooms.*');
+
+            foreach ($results as $key => $result){
+                foreach ($rooms as $room){
+                    if ($room['base_id'] == $result['base_id']){
+                        $results[$key]['rooms'][] = $room;
+                    }
+                }
+            }
+        }
+
+        return $results;
+    }
+
+    public function getRoomsIn(array $bases_id = [], string $fields = 'images, base_id')
+    {
+        $sql = 'SELECT '.$fields.' FROM wp_luck_rooms
                 WHERE base_id IN ("'.(implode('", "', $bases_id).'")
                 AND room_id != ""');
 

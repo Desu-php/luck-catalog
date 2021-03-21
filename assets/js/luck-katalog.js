@@ -15,8 +15,11 @@ if (jQuery('#katalog-vue').length > 0) {
             roomsImages: [],
             geoObjects: [],
             isOnlinePayment: false,
+            basesSaved: [],
             sort: {name: 'Без сортировки', class: ''},
-            loading: false,
+            loading: true,
+            paginate: false,
+            canFilter: 0,
             sortItems: [
                 {name: 'По умолчанию', class: ''},
                 {name: 'По возрастанию цены', order: 'minPrice', direction: 'ASC', class: 'gold-icon'},
@@ -74,22 +77,77 @@ if (jQuery('#katalog-vue').length > 0) {
                 }
                 return five;
             },
-
+            setBasesSave() {
+                return axios.get(AJAX_URL, {params: this.getBasesParams(-1, false, true, 'get_bases_katalog', false)}).then(response => {
+                    this.basesSaved = response.data.bases ? response.data.bases : []
+                })
+            },
             checkImageBase() {
-                jQuery('.base-link-images').each(function (){
-                    console.log('images')
+                jQuery('.base-link-images').each(function () {
                     const base = jQuery(this)
-                    if (base.find('a:visible').length < 3){
+                    if (base.find('a:visible').length < 3) {
                         base.find('a:hidden').first().show()
                     }
 
                 })
             },
-            filterHandler(e){
+            filterHandler(e) {
                 const target = e.target
                 const category = target.getAttribute('data-category')
                 const value = target.getAttribute('data-value')
-                this.createOrDeleteFilterData(target.checked, category,value)
+                this.createOrDeleteFilterData(target.checked, category, value)
+            },
+
+            checkFilter() {
+                let bases = this.basesSaved.filter(item => {
+                    if (this.filter.static.find(item => item.type === 'hasPrepay')) {
+                        if (item.hasPrepay !== "0") {
+                            return false
+                        }
+                    }
+                    if (this.filter.static.find(item => item.type === 'isRequest')) {
+                        if (item.isRequest !== "0") {
+                            return false
+                        }
+                    }
+                    if (this.filter.static.find(item => item.type === 'hasOnlinePay')) {
+                        if (item.hasOnlinePay === "0") {
+                            return false
+                        }
+
+                    }
+                    if (this.filter.static.find(item => item.type === 'hasPointsPay')) {
+                        if (item.maxPointsPcPay === "0") {
+                            return false
+                        }
+                    }
+
+                    if (!(this.minPrice.value[0] <= item.minPrice && this.minPrice.value[1] >= item.maxPrice)) {
+                        return false;
+                    }
+
+                    if (!item.rooms.find(room => this.square.value[0] <= room.square && this.square.value[1] >= room.square)) {
+                        return false
+                    }
+
+                    if (this.filter.features.length > 0){
+                        if (!item.rooms.find(room=> {
+                            if (!this.filter.features.find(feature => {
+                                if (room.feature_ids.indexOf(feature.feature_id) === -1){
+                                    return true
+                                }
+                            })){
+                                return true
+                            }
+                        })){
+                            return  false
+                        }
+                    }
+
+
+                    return true;
+                })
+                this.canFilter = bases.length
             },
             createOrDeleteFilterData(checked = false, category, value) {
                 if (checked) {
@@ -105,7 +163,8 @@ if (jQuery('#katalog-vue').length > 0) {
                 } else {
                     this.checkedFilters[category] = this.checkedFilters[category].filter(item => item !== value)
                 }
-                console.log(this.checkedFilters)
+               this.checkFilter()
+
             },
             sortingByPc(items) {
                 const firstItems = []
@@ -272,11 +331,10 @@ if (jQuery('#katalog-vue').length > 0) {
             },
             setBasesMap() {
                 return axios.get(AJAX_URL, {params: this.getBasesParams(-1, false, true)}).then(response => {
-                    this.basesMap = response.data.bases ? response.data.bases.map(base => {
+                    this.basesMap = response.data.bases.length > 0 ? response.data.bases.map(base => {
                         base.rating = Number(base.rating)
                         return base
                     }) : []
-
                     this.basesSelect = this.basesMap.sort((a, b) => (a.name > b.name) ? 1 : -1)
                     return response.data
                 })
@@ -304,14 +362,12 @@ if (jQuery('#katalog-vue').length > 0) {
                     }
                 })
             },
-            checked(filter){
-                console.log(filter)
-               if (this.filter.features.filter(item => item.feature_id === filter.feature_id)){
-                   console.log(filter)
-                   this.createOrDeleteFilterData(true,filter.category_id, filter.name )
-                   return true
-               }
-               return false
+            checked(filter) {
+                if (this.filter.features.filter(item => item.feature_id === filter.feature_id)) {
+                    this.createOrDeleteFilterData(true, filter.category_id, filter.name)
+                    return true
+                }
+                return false
             },
             setMap() {
                 return this.setBasesMap().then(() => {
@@ -346,7 +402,7 @@ if (jQuery('#katalog-vue').length > 0) {
                     clusterer.add(geoObjects)
                     myMap.geoObjects.add(clusterer)
                     this.geoObjects = objectsEvent
-                    jQuery('body').on('mouseover', '.kalbosa', function () {
+                    jQuery('body').on('mouseover', '.card-object', function () {
                         const key = jQuery(this).data('key')
                         const objectState = clusterer.getObjectState(objectsEvent[jQuery(this).data('key')]);
 
@@ -448,7 +504,6 @@ if (jQuery('#katalog-vue').length > 0) {
                     return false
                 }
                 this.closeFilters()
-                this.bases = []
                 this.showPreloader()
                 this.setTotalBases()
                 let bases = this.setBases()
@@ -479,7 +534,6 @@ if (jQuery('#katalog-vue').length > 0) {
             hidePreloader() {
                 // jQuery('#preloader_sl').fadeOut('slow')
                 this.loading = false
-                console.log('hide')
             },
             onlyListView() {
                 if (this.listView) {
@@ -510,18 +564,22 @@ if (jQuery('#katalog-vue').length > 0) {
                         return response.data
                     })
             },
-            getBasesParams(limit = null, need_without = false, with_city = true, action = 'get_bases_katalog') {
+            getBasesParams(limit = null, need_without = false, with_city = true, action = 'get_bases_katalog', filter = true) {
                 let params = {
                     slug: SLUG,
                     action: action,
-                    square: this.square.value,
-                    minPrice: this.minPrice.value,
-                    filters: this.filter.static.map(item => item.type),
-                    features: this.filter.features.map(item => item.feature_id),
                     sphere: SPHERE_ID,
                     limit: limit ? limit : this.limit,
-                    sort_order: this.sort.order ? this.sort.order : null,
-                    sort_direction: this.sort.direction ? this.sort.direction : null,
+                }
+                if (filter){
+                    params.square = this.square.value
+                    params.filters = this.filter.static.map(item => item.type)
+                    params.minPrice = this.minPrice.value
+                    params.features = this.filter.features.map(item => item.feature_id)
+                    params.sort_order = this.sort.order ? this.sort.order : null
+                    params.sort_direction = this.sort.direction ? this.sort.direction : null
+                }else {
+                    params.saved = true;
                 }
 
                 if (with_city) {
@@ -534,7 +592,8 @@ if (jQuery('#katalog-vue').length > 0) {
 
                 return params
             },
-           async showMore() {
+            async showMore() {
+                this.paginate = true
                 this.showPreloader()
                 await axios.get(AJAX_URL, {params: this.getBasesParams(10, true, true, 'get_bases_katalog_with_rooms')}).then(async response => {
                     if (response.data) {
@@ -551,7 +610,7 @@ if (jQuery('#katalog-vue').length > 0) {
 
                     }
                     this.hidePreloader()
-                    ()
+                    this.paginate = false
                 })
             },
             scroll() {
@@ -664,6 +723,7 @@ if (jQuery('#katalog-vue').length > 0) {
 
                 this.square.timer = setTimeout(() => {
                     this.showPreloader()
+                    this.setTotalBases()
                     let map = this.setMap()
                     let bases = this.setBases()
 
@@ -700,7 +760,8 @@ if (jQuery('#katalog-vue').length > 0) {
                     this.setTotalBases()
                     let map = this.setMap()
                     let bases = this.setBases()
-                    Promise.all([bases, map]).then(() => {
+                    let basesSaved = this.setBasesSave()
+                    Promise.all([bases, map,basesSaved]).then(() => {
                         setTimeout(() => this.hidePreloader(), 2000)
                         jQuery(".base-link-images a").fancybox();
 

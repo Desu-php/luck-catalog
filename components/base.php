@@ -5,7 +5,18 @@
 <div>
     <?php
     if (function_exists('yoast_breadcrumb')) {
-        yoast_breadcrumb('<div class="breadcrumbs"><row><div><span>OMg</span></div>','</row></div>');
+        yoast_breadcrumb('<div class="breadcrumbs breadcrumbs-catalog"><div class="breadcrumbs-wrapper">
+         <div class="desctop-show desctop-show-active">
+                <div class="total_items total-item-filter">
+                    <span>Всего объектов: <span class="badge badge-primary"> {{ basesTotal }}</span></span>
+                </div>
+                <div class="catalog_left__top--item catalog_left__top--item_view filter-two-btn">
+                    <button @click="onlyListView" :class="{ active: listView }">Списком</button>
+                    <button @click="onlyMapView" :class="{ active: mapView }">На карте</button>
+                </div>
+            </div>
+            
+','</div></div>');
     }
     ?>
     <div class="special-heading align-center filter-head">
@@ -14,19 +25,19 @@
                 <button @click="toggleFilters"><img src="<?php echo plugins_url('luck-catalog/assets/img/filter-icon.png') ?>" />Фильтры
                 </button>
             </div>
-            <div class="filter-city">
-                <span class="filter-city-title">Ваш город:</span>
-                <v-select v-model="city" :options="cities" @input="changeCity" placeholder="Город" label="name"></v-select>
-            </div>
-            <div class="desctop-show">
-                <div class='total_items total-item-filter'>
-                    <span>Количество найденных вариантов: <span class="total-item-searched"> {{ basesTotal }}</span></span>
-                </div>
-                <div class="catalog_left__top--item catalog_left__top--item_view filter-two-btn">
-                    <button @click="onlyListView" :class='{ active: listView }'>Списком</button>
-                    <button @click="onlyMapView" :class='{ active: mapView }'>На карте</button>
-                </div>
-            </div>
+<!--            <div class="filter-city">-->
+<!--                <span class="filter-city-title">Ваш город:</span>-->
+<!--                <v-select v-model="city" :options="cities" @input="changeCity" placeholder="Город" label="name"></v-select>-->
+<!--            </div>-->
+<!--            <div class="desctop-show">-->
+<!--                <div class='total_items total-item-filter'>-->
+<!--                    <span>Количество найденных вариантов: <span class="total-item-searched"> {{ basesTotal }}</span></span>-->
+<!--                </div>-->
+<!--                <div class="catalog_left__top--item catalog_left__top--item_view filter-two-btn">-->
+<!--                    <button @click="onlyListView" :class='{ active: listView }'>Списком</button>-->
+<!--                    <button @click="onlyMapView" :class='{ active: mapView }'>На карте</button>-->
+<!--                </div>-->
+<!--            </div>-->
         </div>
         <?php if ($categoryData['sphere']['sphere_id'] == '0be020e3-34dd-432b-ba93-4a7cc45a2777') { ?>
             <!-- <h1 class="title title__custom-lg"><?php echo 'Лофты и ' . mb_strtolower($categoryData['sphere']['name']); ?>
@@ -47,9 +58,9 @@
 
                         <div class="base-container-block">
                             <div class="bases_preview_wrap" v-if='bases' id="bases">
-                                <template v-for="(base,index) in bases" >
-                                    <div class='bases_preview__item' :key="base.base_id">
-                                        <a :href="base.link" @mousedown="sendYaOnSelectBase(base)" class="base-link kalbosa" :data-key="base.base_id">
+                                <template v-for="(base,index) in bases">
+                                    <div class='bases_preview__item' :key="base.base_id" v-show="!loading || paginate">
+                                        <a :href="base.link" @mousedown="sendYaOnSelectBase(base)" class="base-link card-object" :data-key="base.base_id">
                                             <div class="base-link-head">
                                                 <h3 class="base_preview__name">{{ base.sphere }} {{ base.name }}</h3>
                                                 <div class="bases-count">
@@ -131,22 +142,22 @@
                                         </a>
                                     </div>
                                 </template>
-                                    <div  v-for="i in 10" style="max-width: 476px;padding: 15px 4px" class="base-link bases_preview__item" :key="i" v-show="loading">
-                                        <skeleton theme="opacity" shape="radius" bg-color="#dcdcdc">
+                                    <div  v-for="i in 10" style="max-width: 476px;padding: 15px 4px" class="base-link bases_preview__item"  v-show="loading">
+                                        <skeleton theme="opacity" shape="radius" bg-color="#dcdcdc" :key="i" style="padding-right: 10px;">
                                             <row style="padding-left: 10px; border-radius: 5px;">
                                                 <i-col :span="12">
                                                     <tb-skeleton  :aspect-ratio="0.05"></tb-skeleton>
                                                 </i-col>
                                             </row>
                                             <row>
-                                                <i-col :span="8" style="padding-left: 10px;margin-top: 5px" v-for="i in 3">
+                                                <i-col :span="8" style="padding-left: 10px;margin-top: 5px" v-for="i in 3" :key="i">
                                                     <tb-skeleton :span="20" style=";margin-top: 5px" :aspect-ratio="1" shape="square">
                                                     </tb-skeleton>
                                                 </i-col>
                                             </row>
                                             <row style="margin-top: 10px">
-                                                <i-col :span="12" v-for="i in 2">
-                                                    <i-col :span="24" style="padding-left: 10px; margin-top: 15px" v-for="i in 4">
+                                                <i-col :span="12" v-for="i in 2" :key="i">
+                                                    <i-col :span="24" style="padding-left: 10px; margin-top: 15px" v-for="i in 4" :key="i">
                                                         <tb-skeleton :aspect-ratio="0.05"></tb-skeleton>
                                                     </i-col>
                                                 </i-col>
