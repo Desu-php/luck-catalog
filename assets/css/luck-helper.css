@@ -3305,10 +3305,11 @@ input[type=number]:hover {
 
 .object-area__line {
     display: flex;
+}
+.container_object_area_line{
     padding: 15px 0;
     border-bottom: 1px solid #E5E5E5;
 }
-
 
 .object-area__size {
     min-width: 319px;
@@ -3405,11 +3406,14 @@ input[type=number]:hover {
 }
 
 .object-area__btn a, .object-area__btn button {
-    padding: 5px 15px 8px;
-    background-color: #F7F7F7;
+    padding: 8px 15px 8px;
+    background-color: #FCFCFC;
     color: #393939;
     font-size: 14px;
     transition: all .4s;
+    text-transform: uppercase;
+    border: 1px solid #3ED689;
+    border-radius: 3px;
 }
 
 .object-area__btn a:hover, .object-area__btn button:hover {
@@ -3417,10 +3421,6 @@ input[type=number]:hover {
     cursor: pointer;
     background-color: #FF9700;
     color: white;
-}
-
-.object-area__btn button {
-    border: none;
 }
 
 .description {
@@ -3466,6 +3466,7 @@ input[type=number]:hover {
     font-size: 12px;
     line-height: 16px;
     color: #000;
+    cursor: pointer;
 }
 
 .equipment-item + .equipment-item {
@@ -3624,7 +3625,7 @@ input[type=number]:hover {
     box-sizing: border-box;
 }
 .desu-modal-img{
-    max-width: 130px;
+    max-width: 90px;
     margin: 0 auto;
     margin-bottom: 20px;
 }
@@ -3674,6 +3675,7 @@ input[type=number]:hover {
     font-weight: 400;
     line-height: 16.41px;
     color: black;
+    word-break: break-all;
 }
 .reviews_icon{
     width: 20px;
@@ -3787,6 +3789,24 @@ input[type=number]:hover {
 .header-filter-city .vs__open-indicator{
     fill: rgba(107,107,107, 0.8);
 }
+.urls_container{
+    display: flex;
+    flex-wrap: wrap;
+}
+.urls_btn{
+    font-size: 14px;
+    color: #0B4EEC;
+    background: #E7EFE8;
+    padding: 5px 8px;
+    text-transform: uppercase;
+    margin-right: 30px;
+}
+.mw-100{
+    max-width: 100% !important;
+}
+.overflow-hidden{
+    overflow: hidden !important;
+}
 /*media*/
 
 @media only screen and (max-width: 991px){
@@ -3826,7 +3846,13 @@ input[type=number]:hover {
 .description {
     display: none;
 }
-
+.urls_container{
+    justify-content: space-between;
+}
+.urls_btn{
+    margin-right: 0;
+    margin-top: 20px;
+}
 .address-item.change .address-item__value {
     display: inline-block;
     font-size: 14px;

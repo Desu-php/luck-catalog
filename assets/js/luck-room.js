@@ -28,6 +28,11 @@ if (jQuery('#room-vue').length > 0) {
                 reviews: [],
                 isReviewsVisible: false,
                 modalShow: false,
+                equipment: {
+                    description: '',
+                    image: ''
+                },
+                modalOrderShow: false,
                 name: '',
                 phone: '',
                 phoneError: false,
@@ -52,10 +57,27 @@ if (jQuery('#room-vue').length > 0) {
                 }
                 return five;
             },
+            showEquipmentDescription(description, image){
+                if (description){
+                    this.modalShow = true
+                    this.equipment.description = description
+                    this.equipment.image = image
+                }
+            },
 
             ShowModal(e) {
                 this.room_id = e.currentTarget.getAttribute('data-room_id')
-                console.log(this.room_id)
+                this.modalOrderShow = true
+                jQuery('#header').hide()
+                jQuery('.breadcrumbs').hide()
+                jQuery('body').addClass('overflow-hidden')
+
+            },
+            closeModal(){
+                jQuery('#header').show()
+                jQuery('.breadcrumbs').show()
+                jQuery('body').removeClass('overflow-hidden')
+                this.modalOrderShow = false
             },
             setRooms() {
                 let params = {

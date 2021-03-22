@@ -39,7 +39,26 @@ class Helper
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
 
         $out = curl_exec($curl);
-        
+
+        return json_decode($out);
+    }
+    public function getRequest($link, $params = [])
+    {
+        $curl = curl_init();
+
+        $base_link = $link;
+        $url = !empty($params) ? $base_link . '?' . http_build_query($params) : $base_link;
+
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
+        curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+
+        $out = curl_exec($curl);
+
         return json_decode($out);
     }
 
@@ -68,10 +87,9 @@ class Helper
 
         $expUrl = explode('/', $url);
         $slugWithParams = array_pop($expUrl);
-        
+
         $urlItems = explode('?', $slugWithParams);
         $slug = array_shift($urlItems);
-
         return $slug;
     }
 }

@@ -21,15 +21,14 @@ class PageBuilder extends Helper
         return $data;
     }
 
-    public function getCatalogRoomData()
+    public function getCatalogRoomData($order = true, $corrected_slug = false)
     {
         $data = [];
 
         $slug = $this->getSlug($_SERVER['REQUEST_URI']);
 
         $base = new Base();
-        $data['base'] = $base->getBySlug($slug);
-
+        $data['base'] = $base->getBySlug($slug, $order, $corrected_slug);
         $sphere = new Sphere();
         $data['sphere'] = $sphere->get($data['base']['sphere_id']);
         $data['back_href'] = $sphere->getLink($data['base']['sphere_id']);
@@ -43,10 +42,10 @@ class PageBuilder extends Helper
         $data = [];
 
         $slug = $this->getSlug($_SERVER['REQUEST_URI']);
-        
+
         $base = new Base();
         $data['base'] = $base->getBySlug($slug);
-        
+
         $sphere = new Sphere();
         $data['sphere'] = $sphere->get($data['base']['sphere_id']);
         $data['back_href'] = $sphere->getLink($data['base']['sphere_id']);
@@ -68,7 +67,7 @@ class PageBuilder extends Helper
 
         $data['session'] = isset($_SESSION['katalog'][$data['slug']]) ? $_SESSION['katalog'][$data['slug']] : [];
         $data['cityId'] = isset($_SESSION['katalog'][$data['slug']]['city']) ? $_SESSION['katalog'][$data['slug']]['city'] : '';
-        
+
         if(isset($_GET['city'])){
 
             $city = new City();

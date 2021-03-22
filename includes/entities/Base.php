@@ -182,9 +182,28 @@ class Base extends Helper
         $this->wpdb->query("UPDATE wp_luck_bases SET isArchive = true");
     }
 
-    public function getBySlug($slug)
+    private function correctedSlug()
     {
-        $base = $this->wpdb->get_row("SELECT * FROM wp_luck_bases WHERE link LIKE '%" . $slug . "%' ORDER BY link", "ARRAY_A");
+        $uri_parts = explode('?', $_SERVER['REQUEST_URI'], 2);
+
+        return $uri_parts[0];
+    }
+    public function getBySlug($slug, $order = true, $corrected_slug = false)
+    {
+
+        $sql = "SELECT * FROM wp_luck_bases WHERE link ";
+
+        if ($corrected_slug){
+            $sql .= "LIKE '%" . $this->correctedSlug() . "%'";
+        }else{
+            $sql .=  "LIKE '%" . $slug . "%'";
+        }
+
+        if ($order){
+            $sql .= ' ORDER BY link';
+        }
+
+        $base = $this->wpdb->get_row($sql, "ARRAY_A");
 
         if (!empty($base)) {
             $base['work_time'] = $base['work_time'] == "0-24" ? "Круглосуточно" : $base['work_time'];

@@ -1,6 +1,6 @@
 <?php require_once(WP_PLUGIN_DIR . LUCK_DIR_INCLUDES . "/PageBuilder.php"); ?>
 <?php $pageBuilder = new PageBuilder(); ?>
-<?php $catalogData = $pageBuilder->getCatalogRoomData(); ?>
+<?php $catalogData = $pageBuilder->getCatalogRoomData(false, true); ?>
 <?php
 function getNoun($number, $one, $two, $five)
 {
@@ -19,6 +19,8 @@ function getNoun($number, $one, $two, $five)
     return $five;
 }
 
+$helper = new Helper();
+$reviews = $helper->getRequest('https://dev.musbooking.com/api/reviews/list-base?base=1c306153-9652-4def-b5ed-517136e877cf');
 $room = new Room();
 $rooms = $room->getRoomsWithBaseId($catalogData['base']['base_id']);
 $images = [];
@@ -52,6 +54,22 @@ if ($catalogData['base']['isRequest'] == 0) {
 <!--        </form>-->
 <!--    </div>-->
 <!--</modal>-->
+
+<modal v-if="modalShow" @close="modalShow = false" width="width:400px">
+    <div slot="body">
+        <div class="desu-modal-img">
+            <img v-if="equipment.image.indexOf('https://')===-1"
+                 :src="'https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/res/' + equipment.image + '?width=90&height=90'"
+                 :alt="equipment.description">
+            <img v-else
+                 :src="'https://aosnxmcciq.cloudimg.io/v7/' + equipment.image + '?width=90&height=90'"
+                 :alt="equipment.description">
+        </div>
+        <div class="equipment_description">
+            {{equipment.description}}
+        </div>
+    </div>
+</modal>
 
 <style>
     @media (max-width: 780px) {
@@ -109,31 +127,33 @@ if ($catalogData['base']['isRequest'] == 0) {
                     <section class="main-img">
                         <div class="main-img__item">
                             <a class="fancy-box-gallery" data-fancybox="images"
-                               href="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $images[0] ?>?width=1920&height=1080">
-                                <img src="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $images[0] ?>?width=842&height=532"
+                               href="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= isset($images[0]) ? $images[0] : '' ?>">
+                                <img src="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= isset($images[0]) ? $images[0] : '' ?>"
                                      alt="img">
                             </a>
                         </div>
                         <div class="main-img__col">
                             <a class="main-img__col-item fancy-box-gallery" data-fancybox="images"
-                               href="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $images[1] ?>?width=1920&height=1080">
-                                <img src="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $images[1] ?>?width=608&height=262"
+                               href="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= isset($images[1]) ? $images[1] : '' ?>">
+                                <img src="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= isset($images[1]) ? $images[1] : '' ?>"
                                      alt="img">
                             </a>
                             <a class="main-img__col-item fancy-box-gallery" data-fancybox="images"
-                               href="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $images[2] ?>?width=1920&height=1080">
-                                <div class="main-img__col-text">
-                                    <p>ещё <?= count($images) - 3 ?> фото</p>
-                                </div>
-                                <img src="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $images[2] ?>?width=608&height=262"
+                               href="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= isset($images[2]) ? $images[2] : '' ?>">
+                                <?php if (count($images) - 3 > 0): ?>
+                                    <div class="main-img__col-text">
+                                        <p>ещё <?= count($images) - 3 ?> фото</p>
+                                    </div>
+                                <?php endif; ?>
+                                <img src="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= isset($images[2]) ? $images[2] : '' ?>"
                                      alt="img">
                             </a>
                         </div>
                         <?php foreach ($images as $key => $image) : ?>
                             <?php if ($key > 2): ?>
                                 <a style="display: none" class="fancy-box-gallery" data-fancybox="images"
-                                   href="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>?width=1920&height=1080">
-                                    <img src="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>?width=608&height=262"
+                                   href="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>">
+                                    <img src="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>"
                                          alt="img">
                                 </a>
                             <?php endif; ?>
@@ -143,71 +163,82 @@ if ($catalogData['base']['isRequest'] == 0) {
                         <h2 class="object-area__title title">Площадки объекта</h2>
                         <div class="object-area__inner">
                             <?php foreach ($rooms as $key => $room): ?>
-                                <div class="object-area__line" id="room<?= $key ?>">
-                                    <div class="object-area__size object-area__col">
-                                        <div>
-                                            <h3 class="object-area__size-title"><?= $room['name'] ?></h3>
-                                            <?php if ($room['reviews_count'] > 0): ?>
-                                                <div class="reviews_values">
-                                                    <star-rating :increment="0.5"
-                                                                 :rating="<?= $room['reviews_value'] ?>"
-                                                                 :read-only="true" :show-rating="false"
-                                                                 :star-size="20"
-                                                                 active-color="#EC8000"
-                                                    >
+                                <?php $urls = $helper->apiGet('rooms/search2?room=' . $room['room_id']) ?>
+                                <!--                            --><?php //var_dump($urls->rooms[0]->urls);  ?>
+                                <div class="container_object_area_line">
+                                    <div class="object-area__line" id="room<?= $key ?>">
+                                        <div class="object-area__size object-area__col">
+                                            <div>
+                                                <h3 class="object-area__size-title"><?= $room['name'] ?></h3>
+                                                <?php if ($room['reviews_count'] > 0): ?>
+                                                    <div class="reviews_values">
+                                                        <star-rating :increment="0.5"
+                                                                     :rating="<?= $room['reviews_value'] ?>"
+                                                                     :read-only="true" :show-rating="false"
+                                                                     :star-size="20"
+                                                                     active-color="#EC8000"
+                                                        >
 
-                                                    </star-rating>
-                                                    <div class="reviews_text"><?= $room['reviews_count'] ?> <?= getNoun($room['reviews_count'], 'отзыв', 'отзыва', 'отзывов') ?></div>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-
-                                        <div class="object-area__size-num"><?= $room['square'] ?> м²</div>
-                                    </div>
-
-                                    <div class="object-area__images object-area__col">
-                                        <?php foreach ($room['images'] as $image): ?>
-                                            <div class="object-area__images-item">
-                                                <a data-fancybox="<?= $key ?>"
-                                                   href="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>?width=1920&height=1080"
-                                                   class="fancy-box-gallery">
-                                                    <img src="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>?width=122&height=69"
-                                                         alt="img">
-                                                </a>
+                                                        </star-rating>
+                                                        <div class="reviews_text"><?= $room['reviews_count'] ?> <?= getNoun($room['reviews_count'], 'отзыв', 'отзыва', 'отзывов') ?></div>
+                                                    </div>
+                                                <?php endif; ?>
                                             </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                    <div class="object-area__about object-area__col">
-                                        <div class="text-container text-line-4">
-                                            <span style="font-weight: bold">О площадке</span><br>
-                                            <?= nl2br($room['raider']) ?>
-                                        </div>
-                                        <button data-open-text="еще" data-close-text="Свернуть" class="minimize-btn"
-                                                data-parent="#room<?= $key ?>">еще
-                                        </button>
-                                    </div>
-                                    <div class="object-area__btn">
-                                        <button @click="ShowModal"
-                                                data-room_id="<?= $room['room_id'] ?>"
-                                                data-remodal-target="vue-modal"
-                                                class="desktop-order"
 
-                                        ><?= $order_text ?></button>
-                                        <a class="mobile-order"
-                                           href="https://widget.musbooking.com/?room=<?= $room['room_id'] ?>&source=1&optionChange=1">
-                                            <?= $order_text ?>
-                                        </a>
+                                            <div class="object-area__size-num"><?= $room['square'] ?> м²</div>
+                                        </div>
+                                        <div class="object-area__images object-area__col">
+                                            <?php foreach ($room['images'] as $image): ?>
+                                                <div class="object-area__images-item">
+                                                    <a data-fancybox="<?= $key ?>"
+                                                       href="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>?width=1920&height=1080"
+                                                       class="fancy-box-gallery">
+                                                        <img src="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>?width=122&height=69"
+                                                             alt="img">
+                                                    </a>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                        <div class="object-area__about object-area__col">
+                                            <div class="text-container text-line-4">
+                                                <span style="font-weight: bold">О площадке</span><br>
+                                                <?= nl2br($room['raider']) ?>
+                                            </div>
+                                            <button data-open-text="еще" data-close-text="Свернуть" class="minimize-btn"
+                                                    data-parent="#room<?= $key ?>">еще
+                                            </button>
+                                        </div>
+                                        <div class="object-area__btn">
+                                            <button @click="ShowModal"
+                                                    data-room_id="<?= $room['room_id'] ?>"
+                                                    data-remodal-target="vue-modal"
+                                                    class="desktop-order"
+
+                                            ><?= $order_text ?></button>
+                                            <a class="mobile-order"
+                                               href="https://widget.musbooking.com/?room=<?= $room['room_id'] ?>&source=1&optionChange=1&rg=1">
+                                                <?= $order_text ?>
+                                            </a>
+                                        </div>
                                     </div>
+                                    <?php if (!empty($urls->rooms[0]->urls)): ?>
+                                        <div class="urls_container">
+                                            <?php foreach ($urls->rooms[0]->urls as $url): ?>
+                                                <a class="urls_btn"
+                                                   href="<?= $url->value ?>"><?= $url->description ?></a>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
                         </div>
                     </section>
-<!--                    --><?php //preg_match_all('/\./', $catalogData['base']['description'], $matches) ?>
-<!--                    --><?php //var_dump($matches); ?>
+                    <!--                    --><?php //preg_match_all('/\./', $catalogData['base']['description'], $matches) ?>
+                    <!--                    --><?php //var_dump($matches); ?>
                     <section class="description" id="description_base">
                         <h2 class="description__title title">Описание</h2>
                         <div class="text-container text-line-7">
-                                  <?= $catalogData['base']['description'] ?>
+                            <?= $catalogData['base']['description'] ?>
                         </div>
                         <a href="#" data-open-text="Читать полностью" data-close-text="Свернуть" class="minimize-btn"
                            data-parent="#description_base">Читать полностью</a>
@@ -219,7 +250,8 @@ if ($catalogData['base']['isRequest'] == 0) {
                         <div class="equipment__line" v-for="(equipment, groupName) in equipments">
                             <div class="equipment__line-title">{{groupName}}</div>
                             <div class="equipment__line-items">
-                                <div class="equipment-item" v-for="item in equipment" :key="item.id">
+                                <div class="equipment-item" v-for="item in equipment" :key="item.id"
+                                     @click="showEquipmentDescription(item.description,item.photoUrl)">
                                     <div class="equipment-item__img">
                                         <img v-if="item.photoUrl.indexOf('https://')===-1"
                                              :src="'https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/res/' + item.photoUrl + '?width=90&height=90'"
@@ -233,48 +265,58 @@ if ($catalogData['base']['isRequest'] == 0) {
                             </div>
                         </div>
                     </section>
-                    <?php if ($catalogData['base']['reviews'] > 0): ?>
+                    <?php if (count($reviews) > 0): ?>
                         <section class="base_reviews_section">
                             <h2 class="equipment__title title">
                                 Отзывы о площадке
                             </h2>
-                            <div class="base_reviews_container">
-                                <div class="base_reviews_avatar_container">
-                                    <img src="<?=plugins_url().'/luck-catalog/assets/img/reviews_placeholder.jpg'?>" alt="avatar">
+                            <?php foreach ($reviews as $review): ?>
+                                <div class="base_reviews_container mt-28">
+                                    <div class="base_reviews_avatar_container">
+                                        <img src="<?= ($review->photoUrl == '*')?plugins_url() . '/luck-catalog/assets/img/reviews_placeholder.jpg':'https://dev.musbooking.com/res/'.$review->photoUrl?>"
+                                             alt="avatar">
+                                    </div>
+                                    <div class="base_reviews_item_container">
+                                        <div class="base_reviews_info_header">
+                                            <div><?=$review->name?>, <?=date('m.d.Y', strtotime($review->date))?></div>
+                                            <div>
+                                                <svg class="reviews_icon" viewBox="0 0 20 20" fill="none"
+                                                     xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M18.3 6.99995H12.9L11.2 1.59995C10.8 0.399951 9.20005 0.399951 8.80005 1.59995L7.10005 6.99995H1.70005C0.500049 6.99995 4.8697e-05 8.49995 1.00005 9.19995L5.40005 12.6L3.70005 18.1C3.30005 19.3 4.70005 20.2 5.70005 19.5L10 16.1L14.3 19.4C15.3 20.1 16.6 19.2 16.3 18L14.6 12.5L19 9.09995C20 8.49995 19.5 6.99995 18.3 6.99995Z"
+                                                          fill="#EC8000"/>
+                                                </svg>
+                                                <?=$review->value?>
+                                            </div>
+                                            <div>
+                                                <?php foreach ( $rooms as $room){
+                                                    if ($room['room_id'] == $review->roomId){
+                                                        $room['name'];
+                                                    }
+                                                } ?>
+
+                                            </div>
+                                        </div>
+
+                                        <div class="base_reviews_text">
+                                            <?=$review->text?>
+                                        </div>
+                                        <?php if (!is_null($review->reply)): ?>
+                                        <div class="base_reviews_container mt-28">
+                                            <div class="base_reviews_avatar_container">
+                                                <img src="<?= plugins_url() . '/luck-catalog/assets/img/reviews_placeholder.jpg' ?>"
+                                                     alt="avatar">
+                                            </div>
+                                            <div class="object_reviews_text_container">
+                                                <div class="object_reviews_title"><?=$review->reply->sender?>, <?=date('m.d.Y', strtotime($review->reply->date))?></div>
+                                                <div class="object_reviews_thx">
+                                                    <?=$review->reply->text?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
-                                <div class="base_reviews_item_container">
-                                    <div class="base_reviews_info_header">
-                                        <div>Толя, 26.07.2020</div>
-                                        <div>
-                                            <svg class="reviews_icon" viewBox="0 0 20 20" fill="none"
-                                                 xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M18.3 6.99995H12.9L11.2 1.59995C10.8 0.399951 9.20005 0.399951 8.80005 1.59995L7.10005 6.99995H1.70005C0.500049 6.99995 4.8697e-05 8.49995 1.00005 9.19995L5.40005 12.6L3.70005 18.1C3.30005 19.3 4.70005 20.2 5.70005 19.5L10 16.1L14.3 19.4C15.3 20.1 16.6 19.2 16.3 18L14.6 12.5L19 9.09995C20 8.49995 19.5 6.99995 18.3 6.99995Z"
-                                                      fill="#EC8000"/>
-                                            </svg>
-                                            4.5
-                                        </div>
-                                        <div>
-                                            Loft 1869
-                                        </div>
-                                    </div>
-                                    <div class="base_reviews_text">
-                                        Очень довольны, сегодня посетили в первый раз данную реп. базу, и помогли с
-                                        настройкой звука, оборудование топ, заметно, что следят за качеством.
-                                        Очень стильная комната “Честер”, рекомендую! Ещё отмечу локацию, было бы плюсом
-                                        также написать подробнее, как дойти до студии:)
-                                    </div>
-                                    <div class="base_reviews_container mt-28">
-                                        <div class="base_reviews_avatar_container">
-                                            <img src="<?=plugins_url().'/luck-catalog/assets/img/reviews_placeholder.jpg'?>"
-                                                 alt="">
-                                        </div>
-                                        <div class="object_reviews_text_container">
-                                            <div class="object_reviews_title">Polygon Photo, 26.07.2020</div>
-                                            <div class="object_reviews_thx">Спасибо за отзыв</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <?php endforeach; ?>
                         </section>
                     <?php endif; ?>
 
@@ -300,17 +342,29 @@ if ($catalogData['base']['isRequest'] == 0) {
     </div>
 </div>
 
-<div class="remodal" data-remodal-id="vue-modal">
-    <button data-remodal-action="close" class="remodal-close"></button>
-    <div class="widget-block">
-        <iframe v-if="rooms.length > 0" id="widget"
-                :src="`
-                <?php echo LUCK_WIDGET_URL; ?>/?room=${room_id}&source=1&optionChange=1&disableLinkLogo=1`"
-                width="1366" height="768">
-            Ваш браузер не поддерживает плавающие фреймы!
-        </iframe>
-    </div>
-</div>
+<!--<div data-remodal-id="vue-modal" class="remodal remodal-is-initialized remodal-is-closed" tabindex="-1"-->
+<!--     data-remodal-options="hashTracking: false, closeOnOutsideClick: false, stack:true">-->
+<!--    <button data-remodal-action="close" class="remodal-close"></button>-->
+<!--    <div class="widget-block">-->
+<!--        <iframe id="widget" :src="`--><?php //echo LUCK_WIDGET_URL; ?><!--?room=${room_id}&source=1&optionChange=1&disableLinkLogo=1&rg=1`"-->
+<!--                width="1366" height="768">-->
+<!--            Ваш браузер не поддерживает плавающие фреймы!-->
+<!--        </iframe>-->
+<!--    </div>-->
+<!--</div>-->
+
+<modal v-show="modalOrderShow" @close="closeModal" width="width:100%">
+   <div slot="body" style="height: 100vh; overflow-y: scroll">
+       <div class="widget-block">
+           <iframe v-if="rooms.length > 0" id="widget"
+                   :src="`
+                <?php echo LUCK_WIDGET_URL; ?>/?room=${room_id}&source=1&optionChange=1&disableLinkLogo=1&rg=1`"
+                   width="1366" height="768">
+               Ваш браузер не поддерживает плавающие фреймы!
+           </iframe>
+       </div>
+   </div>
+</modal>
 
 <script type="text/x-template" id="modal-template">
     <transition name="modal">
