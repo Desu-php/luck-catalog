@@ -621,7 +621,7 @@ class Base extends Helper
 
     private function getBasesListWithRooms($request)
     {
-        $fields = 'b.base_id, b.link, b.sphere, b.name, b.address, b.metro, b.work_time, b.weekend_time, b.hasOnlinePay, b.bookingPointsPc, b.maxPointsPcPay, b.reviews, b.minPrice, b.maxPrice';
+        $fields = 'b.base_id, b.link, b.sphere, b.name, b.address, b.metro, b.work_time, b.weekend_time, b.hasOnlinePay, b.bookingPointsPc, b.maxPointsPcPay, b.reviews, b.rating, b.minPrice, b.maxPrice';
         $sql = "SELECT DISTINCT $fields FROM wp_luck_bases b LEFT JOIN wp_luck_rooms r ON(b.base_id = r.base_id) WHERE r.room_id != '' AND b.isArchive = false";
         $sql .= $this->doFilter($request);
         $sql .= $this->doSort($request);

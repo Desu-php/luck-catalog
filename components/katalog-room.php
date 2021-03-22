@@ -20,7 +20,7 @@ function getNoun($number, $one, $two, $five)
 }
 
 $helper = new Helper();
-$reviews = $helper->getRequest('https://dev.musbooking.com/api/reviews/list-base?base=1c306153-9652-4def-b5ed-517136e877cf');
+$reviews = $helper->getRequest('https://hendrix.musbooking.com/api/reviews/list-base?base='.$catalogData['base']['base_id']);
 $room = new Room();
 $rooms = $room->getRoomsWithBaseId($catalogData['base']['base_id']);
 $images = [];
@@ -272,9 +272,11 @@ if ($catalogData['base']['isRequest'] == 0) {
                             </h2>
                             <?php foreach ($reviews as $review): ?>
                                 <div class="base_reviews_container mt-28">
-                                    <div class="base_reviews_avatar_container">
-                                        <img src="<?= ($review->photoUrl == '*')?plugins_url() . '/luck-catalog/assets/img/reviews_placeholder.jpg':'https://dev.musbooking.com/res/'.$review->photoUrl?>"
-                                             alt="avatar">
+                                    <div>
+                                        <div class="base_reviews_avatar_container">
+                                            <img src="<?= (empty($review->photoUrl) || $review->photoUrl == '*' )?plugins_url() . '/luck-catalog/assets/img/reviews_placeholder.jpg':'https://hendrix.musbooking.com/res/'.$review->photoUrl?>"
+                                                 alt="avatar">
+                                        </div>
                                     </div>
                                     <div class="base_reviews_item_container">
                                         <div class="base_reviews_info_header">
@@ -302,9 +304,11 @@ if ($catalogData['base']['isRequest'] == 0) {
                                         </div>
                                         <?php if (!is_null($review->reply)): ?>
                                         <div class="base_reviews_container mt-28">
-                                            <div class="base_reviews_avatar_container">
-                                                <img src="<?= plugins_url() . '/luck-catalog/assets/img/reviews_placeholder.jpg' ?>"
-                                                     alt="avatar">
+                                            <div>
+                                                <div class="base_reviews_avatar_container">
+                                                    <img src="<?= plugins_url() . '/luck-catalog/assets/img/reviews_placeholder.jpg' ?>"
+                                                         alt="avatar">
+                                                </div>
                                             </div>
                                             <div class="object_reviews_text_container">
                                                 <div class="object_reviews_title"><?=$review->reply->sender?>, <?=date('m.d.Y', strtotime($review->reply->date))?></div>
