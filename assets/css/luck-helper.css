@@ -2929,10 +2929,6 @@ input[type=number]:hover {
         margin-right: 0
     }
 
-    .address-item__title {
-        margin-right: 0
-    }
-
     .base-details__address .base-details__item-inner {
         -webkit-box-orient: vertical;
         -webkit-box-direction: normal;
@@ -3421,6 +3417,7 @@ input[type=number]:hover {
     cursor: pointer;
     background-color: #FF9700;
     color: white;
+    border: none;
 }
 
 .description {
@@ -3459,6 +3456,7 @@ input[type=number]:hover {
 
 .equipment__line-items {
     display: flex;
+    flex-wrap: wrap;
 }
 
 .equipment-item {
@@ -3467,11 +3465,9 @@ input[type=number]:hover {
     line-height: 16px;
     color: #000;
     cursor: pointer;
+    margin-right: 23px;
 }
 
-.equipment-item + .equipment-item {
-    margin-left: 23px;
-}
 
 .equipment-item__img {
     width: 100px;
@@ -3665,17 +3661,17 @@ input[type=number]:hover {
     display: flex;
 }
 .base_reviews_info_header div{
-    margin-right: 26.5px;
     font-size: 20px;
     font-weight: 400;
     color: black;
+    display: flex;
 }
 .base_reviews_text{
     font-size: 14px;
     font-weight: 400;
     line-height: 16.41px;
     color: black;
-    word-break: break-all;
+    word-break: break-word;
 }
 .reviews_icon{
     width: 20px;
@@ -3706,8 +3702,8 @@ input[type=number]:hover {
 .object-area__size-title{
     margin-bottom: 17.7px;
 }
-.reviews_values{
-
+.reviews_values a{
+    color: #0b4eeb !important;
 }
 .reviews_text{
     font-size: 20px;
@@ -3800,12 +3796,20 @@ input[type=number]:hover {
     padding: 5px 8px;
     text-transform: uppercase;
     margin-right: 30px;
+    border-radius: 3px ;
 }
 .mw-100{
     max-width: 100% !important;
 }
 .overflow-hidden{
     overflow: hidden !important;
+}
+.d-flex{
+    display: flex;
+}
+.star-rating-reviews{
+    max-width: 100px;
+    margin: 0 26.5px;
 }
 /*media*/
 
@@ -3927,8 +3931,12 @@ input[type=number]:hover {
 }
 .base_reviews_info_header div{
     font-size: 14px !important;
-    margin-right: 15px !important;
+    margin: 0 !important;
+    display: block;
 }
+/*.star-rating-reviews{*/
+/*   */
+/*}*/
 .object_reviews_title{
     font-size: 14px !important;
 }

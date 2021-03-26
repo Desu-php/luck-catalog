@@ -29,10 +29,32 @@ foreach ($rooms as $key => $room) {
     $images = array_merge($rooms[$key]['images'], $images);
 }
 $order_text = 'Оставить заявку';
+$rg = '&rg=1';
 if ($catalogData['base']['isRequest'] == 0) {
     $order_text = 'забронировать';
+    $rg = '';
 }
 ?>
+<style>
+    @media only screen and (max-width: 992px){
+        .breadcrumbs{
+            top:94px;
+        }
+        .content-wrap{
+            margin-top: 170px;
+
+        }
+        .content-wrap.solid-nav{
+            padding-top: 0 !important;
+        }
+    }
+    @media (max-width: 780px) {
+        .content-wrap{
+            margin-top: 180px;
+
+        }
+    }
+</style>
 <!--<modal v-if="modalShow" @close="modalShow = false" width="width:400px">-->
 <!--    <div slot="body">-->
 <!--        <div class="desu-modal-img">-->
@@ -70,14 +92,6 @@ if ($catalogData['base']['isRequest'] == 0) {
         </div>
     </div>
 </modal>
-
-<style>
-    @media (max-width: 780px) {
-        .breadcrumbs {
-            display: none;
-        }
-    }
-</style>
 <div id="js_info" style="display: none;"
      data-socket_url="<?php echo LUCK_SOCKET_URL; ?>"
      data-widget_url="<?php echo LUCK_WIDGET_URL; ?>"
@@ -176,11 +190,12 @@ if ($catalogData['base']['isRequest'] == 0) {
                                                                      :rating="<?= $room['reviews_value'] ?>"
                                                                      :read-only="true" :show-rating="false"
                                                                      :star-size="20"
-                                                                     active-color="#EC8000"
                                                         >
 
                                                         </star-rating>
-                                                        <div class="reviews_text"><?= $room['reviews_count'] ?> <?= getNoun($room['reviews_count'], 'отзыв', 'отзыва', 'отзывов') ?></div>
+                                                        <div class="reviews_text">
+                                                            <a href="#reviews" ><?= $room['reviews_count'] ?> <?= getNoun($room['reviews_count'], 'отзыв', 'отзыва', 'отзывов') ?></a>
+                                                        </div>
                                                     </div>
                                                 <?php endif; ?>
                                             </div>
@@ -188,15 +203,32 @@ if ($catalogData['base']['isRequest'] == 0) {
                                             <div class="object-area__size-num"><?= $room['square'] ?> м²</div>
                                         </div>
                                         <div class="object-area__images object-area__col">
-                                            <?php foreach ($room['images'] as $image): ?>
+                                            <?php foreach ($room['images'] as $i => $image): ?>
+                                                <?php if ($i < 3): ?>
                                                 <div class="object-area__images-item">
                                                     <a data-fancybox="<?= $key ?>"
-                                                       href="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>?width=1920&height=1080"
+                                                       href="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>"
                                                        class="fancy-box-gallery">
                                                         <img src="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>?width=122&height=69"
                                                              alt="img">
                                                     </a>
                                                 </div>
+                                            <?php else: ?>
+                                                    <div class="object-area__images-item" style="display: none">
+                                                        <a data-fancybox="<?= $key ?>"
+                                                           href="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>"
+                                                           class="fancy-box-gallery">
+                                                            <img src="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>?width=122&height=69"
+                                                                 alt="img">
+                                                        </a>
+                                                    </div>
+                                                    <div class="object-area__images-item">
+                                                        <a href="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>">
+                                                            <img src="https://aosnxmcciq.cloudimg.io/v7/https://partner.musbooking.com/files/res/<?= $image ?>?width=122&height=69"
+                                                                 alt="img">
+                                                        </a>
+                                                    </div>
+                                            <?php endif; ?>
                                             <?php endforeach; ?>
                                         </div>
                                         <div class="object-area__about object-area__col">
@@ -211,12 +243,12 @@ if ($catalogData['base']['isRequest'] == 0) {
                                         <div class="object-area__btn">
                                             <button @click="ShowModal"
                                                     data-room_id="<?= $room['room_id'] ?>"
-                                                    data-remodal-target="vue-modal"
+                                                    data-rg="<?=$rg?>"
                                                     class="desktop-order"
 
                                             ><?= $order_text ?></button>
                                             <a class="mobile-order"
-                                               href="https://widget.musbooking.com/?room=<?= $room['room_id'] ?>&source=1&optionChange=1&rg=1">
+                                               href="https://widget.musbooking.com/?room=<?= $room['room_id'] ?>&source=1&optionChange=1<?=$rg?>">
                                                 <?= $order_text ?>
                                             </a>
                                         </div>
@@ -225,7 +257,7 @@ if ($catalogData['base']['isRequest'] == 0) {
                                         <div class="urls_container">
                                             <?php foreach ($urls->rooms[0]->urls as $url): ?>
                                                 <a class="urls_btn"
-                                                   href="<?= $url->value ?>"><?= $url->description ?></a>
+                                                   target="_blank" href="<?= $url->value ?>"><?= $url->description ?></a>
                                             <?php endforeach; ?>
                                         </div>
                                     <?php endif; ?>
@@ -266,11 +298,14 @@ if ($catalogData['base']['isRequest'] == 0) {
                         </div>
                     </section>
                     <?php if (count($reviews) > 0): ?>
-                        <section class="base_reviews_section">
+                        <section class="base_reviews_section" id="reviews">
                             <h2 class="equipment__title title">
-                                Отзывы о площадке
+                                Отзывы о площадках
                             </h2>
                             <?php foreach ($reviews as $review): ?>
+                            <?php if ($review->rstatus == 0 || $review->rstatus == 11): ?>
+                                <?php continue; ?>
+                            <?php endif; ?>
                                 <div class="base_reviews_container mt-28">
                                     <div>
                                         <div class="base_reviews_avatar_container">
@@ -280,22 +315,23 @@ if ($catalogData['base']['isRequest'] == 0) {
                                     </div>
                                     <div class="base_reviews_item_container">
                                         <div class="base_reviews_info_header">
-                                            <div><?=$review->name?>, <?=date('m.d.Y', strtotime($review->date))?></div>
-                                            <div>
-                                                <svg class="reviews_icon" viewBox="0 0 20 20" fill="none"
-                                                     xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M18.3 6.99995H12.9L11.2 1.59995C10.8 0.399951 9.20005 0.399951 8.80005 1.59995L7.10005 6.99995H1.70005C0.500049 6.99995 4.8697e-05 8.49995 1.00005 9.19995L5.40005 12.6L3.70005 18.1C3.30005 19.3 4.70005 20.2 5.70005 19.5L10 16.1L14.3 19.4C15.3 20.1 16.6 19.2 16.3 18L14.6 12.5L19 9.09995C20 8.49995 19.5 6.99995 18.3 6.99995Z"
-                                                          fill="#EC8000"/>
-                                                </svg>
-                                                <?=$review->value?>
-                                            </div>
-                                            <div>
-                                                <?php foreach ( $rooms as $room){
-                                                    if ($room['room_id'] == $review->roomId){
-                                                        $room['name'];
-                                                    }
-                                                } ?>
+                                            <div><?=$review->name?>, <div>
+                                                    <?=date('d.m.Y', strtotime($review->date))?>
+                                                    <div class="star-rating-reviews">
+                                                        <star-rating :increment="0.5"
+                                                                     :rating="<?=$review->value?>"
+                                                                     :read-only="true" :show-rating="false"
+                                                                     :star-size="20"
+                                                        >
+                                                        </star-rating>
+                                                    </div>
+                                                </div></div>
 
+                                            <div><?php foreach ( $rooms as $room): ?>
+                                                    <?php if ($room['room_id'] == $review->roomId): ?>
+                                                        <?=$room['name'];?>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
                                             </div>
                                         </div>
 
@@ -306,12 +342,12 @@ if ($catalogData['base']['isRequest'] == 0) {
                                         <div class="base_reviews_container mt-28">
                                             <div>
                                                 <div class="base_reviews_avatar_container">
-                                                    <img src="<?= plugins_url() . '/luck-catalog/assets/img/reviews_placeholder.jpg' ?>"
+                                                    <img src="<?=$catalogData['base']['image']?>"
                                                          alt="avatar">
                                                 </div>
                                             </div>
                                             <div class="object_reviews_text_container">
-                                                <div class="object_reviews_title"><?=$review->reply->sender?>, <?=date('m.d.Y', strtotime($review->reply->date))?></div>
+                                                <div class="object_reviews_title"><?=$catalogData['base']['name']?>, <?=date('d.m.Y', strtotime($review->reply->date))?></div>
                                                 <div class="object_reviews_thx">
                                                     <?=$review->reply->text?>
                                                 </div>
@@ -357,12 +393,11 @@ if ($catalogData['base']['isRequest'] == 0) {
 <!--    </div>-->
 <!--</div>-->
 
-<modal v-show="modalOrderShow" @close="closeModal" width="width:100%">
+<modal v-show="modalOrderShow" @close="closeModal"  width="width: 1090px">
    <div slot="body" style="height: 100vh; overflow-y: scroll">
        <div class="widget-block">
            <iframe v-if="rooms.length > 0" id="widget"
-                   :src="`
-                <?php echo LUCK_WIDGET_URL; ?>/?room=${room_id}&source=1&optionChange=1&disableLinkLogo=1&rg=1`"
+                   src=""
                    width="1366" height="768">
                Ваш браузер не поддерживает плавающие фреймы!
            </iframe>
@@ -372,8 +407,8 @@ if ($catalogData['base']['isRequest'] == 0) {
 
 <script type="text/x-template" id="modal-template">
     <transition name="modal">
-        <div class="modal-mask">
-            <div class="modal-wrapper">
+        <div class="modal-mask"  @click.self="$emit('close')">
+            <div class="modal-wrapper" @click.self="$emit('close')">
                 <div class="modal-container" style="position: relative;" :style="width">
                     <span @click="$emit('close')" class="modal-close"><i class="fa fa-times"
                                                                          aria-hidden="true"></i></span>

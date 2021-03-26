@@ -2,23 +2,10 @@ if (jQuery('#room-vue').length > 0) {
     Vue.component("modal", {
         props: ['width'],
         template: "#modal-template",
+
     });
-    function textLine (){
-      const div = jQuery('.text-line-7'),
-          lh = parseInt(div.css('line-height')),
-          dh = div.height();
-      const count_line = dh/lh
-        if (count_line <= 6){
-            jQuery('#description_base').find('a').hide()
-        }
 
-    }
-
-    jQuery(window).load(function (){
-        textLine()
-    })
-    // Vue.use(window.Maska)
-    new Vue({
+    const vi =   new Vue({
         el: '#room-vue',
         data: () => {
             return {
@@ -38,7 +25,8 @@ if (jQuery('#room-vue').length > 0) {
                 phoneError: false,
                 token: '',
                 equipments: [],
-                room_id: ''
+                room_id: '',
+                rg: ''
             }
         },
         methods: {
@@ -57,23 +45,32 @@ if (jQuery('#room-vue').length > 0) {
                 }
                 return five;
             },
-            showEquipmentDescription(description, image){
-                if (description){
+            showEquipmentDescription(description, image) {
+                if (description) {
                     this.modalShow = true
                     this.equipment.description = description
                     this.equipment.image = image
                 }
             },
 
+            modalClose(e)
+            {
+                console.log(e.target.closest('.close-fade'))
+            },
             ShowModal(e) {
-                this.room_id = e.currentTarget.getAttribute('data-room_id')
+                const room_id = e.currentTarget.getAttribute('data-room_id')
+                const rg = e.currentTarget.getAttribute('data-rg')
+                let url = `https://widget.musbooking.com/?room=${room_id}&source=1&optionChange=1&disableLinkLogo=1${rg}`;
+                const widget = document.getElementById('widget')
+                widget.contentWindow.location.replace(url)
+                window.location.href = "#modalShow"
                 this.modalOrderShow = true
                 jQuery('#header').hide()
                 jQuery('.breadcrumbs').hide()
                 jQuery('body').addClass('overflow-hidden')
 
             },
-            closeModal(){
+            closeModal() {
                 jQuery('#header').show()
                 jQuery('.breadcrumbs').show()
                 jQuery('body').removeClass('overflow-hidden')
@@ -133,7 +130,7 @@ if (jQuery('#room-vue').length > 0) {
                 const user = await this.getUser(token)
 
                 if (user.length) {
-                    console.log('room_id',this.room_id)
+                    console.log('room_id', this.room_id)
                 } else {
                     const form = new FormData();
                     form.append('firstName', this.name)
@@ -204,9 +201,60 @@ if (jQuery('#room-vue').length > 0) {
             // this.setRooms().then(() => {
             //     this.setReviews()
             // })
+
             this.setEquipments()
-            jQuery(".fancy-box-gallery").fancybox();
+            // window.addEventListener('popstate', function(event) {
+            //     // The popstate event is fired each time when the current history entry changes.
+            //     this.modalOrderShow = false
+            //
+            // }, false);
+            // window.addEventListener('hashchange', function() {
+            //     console.log('haschanged')
+            // }, false);
         }
     })
+
+    // window.addEventListener('hashchange', function() {
+    //
+    // }, false);
+
+    jQuery(window).on('popstate', function() {
+        vi.closeModal()
+    });
+    function textLine() {
+        const div = jQuery('.text-line-7'),
+            lh = parseInt(div.css('line-height')),
+            dh = div.height();
+        const count_line = dh / lh
+        if (count_line <= 6) {
+            jQuery('#description_base').find('a').hide()
+        }
+
+    }
+    jQuery("body").on('click', '[href*="#"]', function(e){
+        var fixed_offset = 130;
+        jQuery('html,body').stop().animate({ scrollTop: jQuery(this.hash).offset().top - fixed_offset }, 0);
+        e.preventDefault();
+    });
+
+    jQuery(window).load(function () {
+        textLine()
+    })
+
+    jQuery(".fancy-box-gallery").fancybox({
+        arrows: false,
+        padding: 0,
+        helpers: {
+            overlay: {
+                locked: false
+            }
+        },
+        backFocus:false,
+        afterClose: function(){
+            alert('Fancybox closed');
+        },
+    });
+    // Vue.use(window.Maska)
+
 }
 

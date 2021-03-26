@@ -427,11 +427,12 @@ class Base extends Helper
     private function doFilter($request)
     {
         $sql = '';
+
         if (isset($request['city'])) {
-            $sql .= " AND b.city_id = '" . $request['city'] . "'";
+            $sql .= " AND b.city_id = '" .esc_sql($request['city']). "'";
 
             if (isset($request['features'])) {
-                $features = $this->getListByFeatures($request['features']) ;
+                $features = $this->getListByFeatures(esc_sql($request['features'])) ;
                 if (empty($features)){
                     $sql .= " AND b.base_id = 'undefined'";
                 }else{
@@ -440,21 +441,21 @@ class Base extends Helper
             }
 
             if (isset($request['square'])) {
-                $sql .= " AND r.square BETWEEN " . $request['square'][0] . " AND " . $request['square'][1];
+                $sql .= " AND r.square BETWEEN " . esc_sql($request['square'][0]) . " AND " . esc_sql($request['square'][1]);
             }
 
             if (isset($request['minPrice'])) {
-                $sql .= " AND b.minPrice >= " . $request['minPrice'][0];
-                $sql .= " AND b.maxPrice <= " . $request['minPrice'][1];
+                $sql .= " AND b.minPrice >= " .esc_sql($request['minPrice'][0]) ;
+                $sql .= " AND b.maxPrice <= " .esc_sql($request['minPrice'][1]);
             }
         }
 
         if (isset($request['sphere'])) {
-            $sql .= " AND b.sphere_id = '" . $request['sphere'] . "'";
+            $sql .= " AND b.sphere_id = '" .esc_sql($request['sphere']). "'";
         }
 
         if (isset($request['without_ids'])) {
-            $sql .= " AND b.base_id NOT IN ('" . implode($request['without_ids'], "', '") . "')";
+            $sql .= " AND b.base_id NOT IN ('" . implode(esc_sql($request['without_ids']), "', '") . "')";
         }
 
         if (isset($request['filters']) && !empty($request['filters'])) {
@@ -483,7 +484,21 @@ class Base extends Helper
             return ' ORDER BY b.bookingPointsPc DESC, RAND()';
         }
 
-        return ' ORDER BY b.' . $request['sort_order'] . ' ' . $request['sort_direction'];
+        $direction = [
+            'DESC',
+            'ASC'
+        ];
+
+        $columns = [
+            'minPrice',
+            'rating'
+        ];
+
+        if (in_array($request['sort_direction'],$direction) && in_array($request['sort_order'], $columns)){
+            return ' ORDER BY b.' . $request['sort_order'] . ' ' . $request['sort_direction'];
+        }
+
+
     }
 
     private function setLimit($request)
