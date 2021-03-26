@@ -241,20 +241,6 @@ if (jQuery('#room-vue').length > 0) {
         textLine()
     })
 
-    jQuery(".fancy-box-gallery").fancybox({
-        arrows: false,
-        padding: 0,
-        helpers: {
-            overlay: {
-                locked: false
-            }
-        },
-        backFocus:false,
-        afterClose: function(){
-            alert('Fancybox closed');
-        },
-    });
-    // Vue.use(window.Maska)
-
+    jQuery(".fancy-box-gallery").fancybox();
 }
 

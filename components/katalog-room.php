@@ -394,7 +394,7 @@ if ($catalogData['base']['isRequest'] == 0) {
 <!--</div>-->
 
 <modal v-show="modalOrderShow" @close="closeModal"  width="width: 1090px">
-   <div slot="body" style="height: 100vh; overflow-y: scroll">
+   <div slot="body" style="height: 100vh;">
        <div class="widget-block">
            <iframe v-if="rooms.length > 0" id="widget"
                    src=""
